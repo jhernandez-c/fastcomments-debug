@@ -5,6 +5,7 @@
             <span>FastComments Debugger</span>
         </div>
 
+
         <h2 v-if="instances.length === 0">No instances found! Check the Chrome Inspector for errors.</h2>
         <div v-else>
             <h4>{{ Number(instances.length).toLocaleString() }} {{ instances.length === 1 ? 'instance' : 'instances' }}
@@ -18,8 +19,9 @@
                     Inspector for errors.</h3>
                 <h3 class="red" v-if="instance.config.readonly">Instance is readonly! The widget will not render
                     anything if there are no comments for this page.</h3>
-                <h3 class="red" v-if="instance.config.allowAnon">Do not pass allowAnon to the widget configuration manually! Add a customization rule instead. Otherwise, the UI
-                will allow no email to be entered but comments will not save.</h3>
+                <h3 class="red" v-if="instance.config.allowAnon">Do not pass allowAnon to the widget configuration
+                    manually! Add a customization rule instead. Otherwise, the UI
+                    will allow no email to be entered but comments will not save.</h3>
 
                 <div class="meta">
                     <h3>Instance Settings (Passed to Widget)</h3>
@@ -28,14 +30,21 @@
                         </li>
                     </ul>
                     <h3>Instance Settings (Final)</h3>
-                    <h4 class="red" v-if="instance.configViewModelFinal === null || Object.keys(instance.configViewModelFinal).length === 0">No final configuration found! If widget is loading, open/close this popup to get the latest values.</h4>
+                    <h4 class="red"
+                        v-if="instance.configViewModelFinal === null || Object.keys(instance.configViewModelFinal).length === 0">
+                        No final configuration found! If widget is loading, open/close this popup to get the latest
+                        values.</h4>
                     <ul v-else>
-                        <li class="meta-item" v-for="(value, key) in instance.configViewModelFinal"><b>{{key}}</b>: {{value}}
+                        <li class="meta-item" v-for="(value, key) in instance.configViewModelFinal"><b>{{key}}</b>:
+                            {{value}}
                         </li>
                     </ul>
                 </div>
             </div>
         </div>
+
+        <h3 class="red" v-if="hasEmbedJS === false">The FastComments embed script (embed.min.js) was not found on this
+            page.</h3>
     </div>
     <div class="left-right-art"></div>
 </template>
@@ -46,39 +55,52 @@
 
     interface ViewModel {
         instances: WidgetInstanceInterface[]
+        hasEmbedJS: boolean | null
     }
 
     const data: ViewModel = {
-        instances: []
+        instances: [],
+        hasEmbedJS: null
     };
-    chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
-        if (tabs[0].id) {
-            chrome.tabs.sendMessage(tabs[0].id, {action: 'inspect'}, function (response: WidgetInstanceInterface[]) {
-                data.instances = response || [];
-                for (const instance of data.instances) {
-                    for (const key in instance.config) {
-                        // @ts-ignore
-                        if (instance.config[key] === 'true') {
+
+    interface ContentResponse {
+        instances: WidgetInstanceInterface[]
+        hasEmbedJS: boolean | null
+    }
+
+    function queryContentScript() {
+        chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
+            if (tabs[0].id) {
+                chrome.tabs.sendMessage(tabs[0].id, {action: 'inspect'}, function (response: ContentResponse) {
+                    data.instances = response.instances || [];
+                    for (const instance of data.instances) {
+                        for (const key in instance.config) {
                             // @ts-ignore
-                            instance.config[key] = true;
-                            // @ts-ignore
-                        } else if (instance.config[key] === 'false') { // not sure why this happens atm, but hack fixes it
-                            // @ts-ignore
-                            instance.config[key] = false;
-                            // @ts-ignore
-                        } else if (typeof instance.config[key] === 'string') {
-                            // @ts-ignore
-                            instance.config[key] = decodeURIComponent(instance.config[key]);
+                            if (instance.config[key] === 'true') {
+                                // @ts-ignore
+                                instance.config[key] = true;
+                                // @ts-ignore
+                            } else if (instance.config[key] === 'false') { // not sure why this happens atm, but hack fixes it
+                                // @ts-ignore
+                                instance.config[key] = false;
+                                // @ts-ignore
+                            } else if (typeof instance.config[key] === 'string') {
+                                // @ts-ignore
+                                instance.config[key] = decodeURIComponent(instance.config[key]);
+                            }
                         }
+                        instance.configViewModel = configToViewModel(instance.config);
+                        instance.configViewModelFinal = configToViewModel(instance.finalConfig);
                     }
-                    instance.configViewModel = configToViewModel(instance.config);
-                    instance.configViewModelFinal = configToViewModel(instance.finalConfig);
-                }
-            });
-        } else {
-            console.log('The FastComments Debug Extension cannot communicate with the page as the current tab does not have an id', tabs[0]);
-        }
-    });
+                    data.hasEmbedJS = response.hasEmbedJS;
+                });
+            } else {
+                console.log('The FastComments Debug Extension cannot communicate with the page as the current tab does not have an id', tabs[0]);
+            }
+        });
+    }
+    setInterval(queryContentScript, 1000);
+    queryContentScript();
 
     export default {
         name: 'App',
