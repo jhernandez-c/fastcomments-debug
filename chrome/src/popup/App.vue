@@ -71,34 +71,39 @@
     function queryContentScript() {
         chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
             if (tabs[0].id) {
-                chrome.tabs.sendMessage(tabs[0].id, {action: 'inspect'}, function (response: ContentResponse) {
-                    data.instances = response.instances || [];
-                    for (const instance of data.instances) {
-                        for (const key in instance.config) {
-                            // @ts-ignore
-                            if (instance.config[key] === 'true') {
+                try {
+                    chrome.tabs.sendMessage(tabs[0].id, {action: 'inspect'}, function (response: ContentResponse) {
+                        data.instances = response.instances || [];
+                        for (const instance of data.instances) {
+                            for (const key in instance.config) {
                                 // @ts-ignore
-                                instance.config[key] = true;
-                                // @ts-ignore
-                            } else if (instance.config[key] === 'false') { // not sure why this happens atm, but hack fixes it
-                                // @ts-ignore
-                                instance.config[key] = false;
-                                // @ts-ignore
-                            } else if (typeof instance.config[key] === 'string') {
-                                // @ts-ignore
-                                instance.config[key] = decodeURIComponent(instance.config[key]);
+                                if (instance.config[key] === 'true') {
+                                    // @ts-ignore
+                                    instance.config[key] = true;
+                                    // @ts-ignore
+                                } else if (instance.config[key] === 'false') { // not sure why this happens atm, but hack fixes it
+                                    // @ts-ignore
+                                    instance.config[key] = false;
+                                    // @ts-ignore
+                                } else if (typeof instance.config[key] === 'string') {
+                                    // @ts-ignore
+                                    instance.config[key] = decodeURIComponent(instance.config[key]);
+                                }
                             }
+                            instance.configViewModel = configToViewModel(instance.config);
+                            instance.configViewModelFinal = configToViewModel(instance.finalConfig);
                         }
-                        instance.configViewModel = configToViewModel(instance.config);
-                        instance.configViewModelFinal = configToViewModel(instance.finalConfig);
-                    }
-                    data.hasEmbedJS = response.hasEmbedJS;
-                });
+                        data.hasEmbedJS = response.hasEmbedJS;
+                    });
+                } catch (e) {
+                    console.debug(e);
+                }
             } else {
                 console.log('The FastComments Debug Extension cannot communicate with the page as the current tab does not have an id', tabs[0]);
             }
         });
     }
+
     setInterval(queryContentScript, 1000);
     queryContentScript();
 

@@ -16,8 +16,15 @@ function codeToInject() {
     setInterval(broadcastFCInstances, 1000);
     broadcastFCInstances();
 
+    let embedJsInterval: number;
     let hasEmbedJS : boolean|null = null; // Do we have any FastComments embed.js scripts on the page?
     function broadcastFCEmbedJS() {
+        if (hasEmbedJS) {
+            if (embedJsInterval) {
+                clearInterval(embedJsInterval);
+            }
+            return;
+        }
         let newEmbedJS = false;
         for (let i = 0; i < document.scripts.length; i++) { // for... of gets turned into a broken loop for some reason
             const script = document.scripts[i];
@@ -37,7 +44,7 @@ function codeToInject() {
         }), '*');
     }
 
-    setInterval(broadcastFCEmbedJS, 5000);
+    embedJsInterval = setInterval(broadcastFCEmbedJS, 1000);
     broadcastFCEmbedJS();
 }
 

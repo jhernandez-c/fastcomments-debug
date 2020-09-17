@@ -22,14 +22,6 @@
       "run_at": "document_start"
     }
   ],
-  "background": {
-    "scripts": [
-      "background/index.js"
-    ],
-    "persistent": false
-  },
-  "devtools_page": "devtools/index.html",
-  "options_page": "options/index.html",
   "web_accessible_resources": [
     "assets/icons/*.png"
   ],
