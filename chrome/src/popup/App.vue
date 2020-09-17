@@ -18,6 +18,8 @@
                     Inspector for errors.</h3>
                 <h3 class="red" v-if="instance.config.readonly">Instance is readonly! The widget will not render
                     anything if there are no comments for this page.</h3>
+                <h3 class="red" v-if="instance.config.allowAnon">Do not pass allowAnon to the widget configuration manually! Add a customization rule instead. Otherwise, the UI
+                will allow no email to be entered but comments will not save.</h3>
 
                 <div class="meta">
                     <h3>Instance Settings (Passed to Widget)</h3>
