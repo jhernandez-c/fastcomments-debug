@@ -1,7 +1,7 @@
 {
-  "name": "chrome-extension-ts-starter",
+  "name": "fastcomments-debug-chrome",
   "version": "1.0.0",
-  "description": "Chrome Extension starter built with TypeScript and Parcel",
+  "description": "Chrome Extension for Debugging Your FastComments Installation",
   "main": "index.js",
   "scripts": {
     "build:bg": "parcel build src/background/index.ts -d dist/background",
@@ -17,7 +17,7 @@
     "lint": "eslint --ext .ts,.tsx ./src",
     "test": "jest -c ./config/jest.config.js"
   },
-  "author": "Yuri Drabik <yurist38@mail.ru>",
+  "author": "Devon Winrick <dwinrick@fastcomments.com>",
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.9.6",

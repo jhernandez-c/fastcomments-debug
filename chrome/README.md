@@ -1,8 +1,13 @@
-# chrome-extension-ts-starter
+# fastcomments-debug-chrome
 
-It is a boilerplate for a Chrome Extension built with TypeScript and Parcel.
+This is a Chrome Extension built with TypeScript and Parcel for debugging your FastComments installation.
 
-## This starter consists of the following parts
+## What issues can this find?
+* How many instances of the widget are active?
+* Why isn't the widget rendering? Check for exceptions, invalid configuration.
+* What page is the widget rendering for?
+
+## This consists of the following parts
 
 * Background script (vanilla TS)
 * Content script (vanilla TS)
