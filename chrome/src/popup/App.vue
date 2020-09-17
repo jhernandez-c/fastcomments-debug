@@ -1,15 +1,70 @@
 <template>
     <div class="container">
-        <h1>{{ message }}</h1>
+        <div class="logo-container">
+            <img src="/../../assets/icons/favicon.png" class="logo" alt="FastComments Logo" title="FastComments"/>
+            FastComments.com Debugger
+        </div>
+
+        <h2 v-if="instances.length === 0">No instances found! Check the Chrome Inspector for errors.</h2>
+        <div v-else>
+            <h4>{{ Number(instances.length).toLocaleString() }} {{ instances.length === 1 ? 'instance' : 'instances' }}
+                of
+                the comment widget found.</h4>
+
+            <div class="widget-instance" v-for="(instance, index) in instances">
+                <h4>Instance {{ index + 1 }} ({{ instance.config.urlId }})</h4>
+
+                <h3 class="red" v-if="!instance.requested">No request to FastComment's servers! Check the Chrome
+                    Inspector for errors.</h3>
+                <h3 class="red" v-if="instance.config.readonly">Instance is readonly! The widget will not render
+                    anything if there are no comments for this page.</h3>
+
+                <div class="meta">
+                    <h3>Instance Settings</h3>
+                    <ul>
+                        <li class="meta-item" v-for="(value, key) in instance.configViewModel"><b>{{key}}</b>: {{value}}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
+    <div class="left-right-art"></div>
 </template>
 
 <script lang="ts">
-    const data = { message: 'no message yet' };
+    import {WidgetInstanceInterface} from "../../../common/widget-instance-interface";
+    import configToViewModel from "../../../common/config-to-view-model";
+
+    interface ViewModel {
+        instances: WidgetInstanceInterface[]
+    }
+
+    const data: ViewModel = {
+        instances: []
+    };
     chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
         if (tabs[0].id) {
-            chrome.tabs.sendMessage(tabs[0].id, { action: 'inspect' }, function (response) {
-                data.message = JSON.stringify(response);
+            chrome.tabs.sendMessage(tabs[0].id, {action: 'inspect'}, function (response: WidgetInstanceInterface[]) {
+                data.instances = response || [];
+                for (const instance of data.instances) {
+                    for (const key in instance.config) {
+                        // @ts-ignore
+                        if (instance.config[key] === 'true') {
+                            // @ts-ignore
+                            instance.config[key] = true;
+                            // @ts-ignore
+                        } else if (instance.config[key] === 'false') { // not sure why this happens atm, but hack fixes it
+                            // @ts-ignore
+                            instance.config[key] = false;
+                            // @ts-ignore
+                        } else if (typeof instance.config[key] === 'string') {
+                            // @ts-ignore
+                            instance.config[key] = decodeURIComponent(instance.config[key]);
+                        }
+                    }
+                    instance.configViewModel = configToViewModel(instance.config);
+                }
             });
         } else {
             console.log('The FastComments Debug Extension cannot communicate with the page as the current tab does not have an id', tabs[0]);
@@ -26,10 +81,44 @@
 
 <style scoped lang="scss">
     .container {
-        text-align: center;
+        width: 500px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 
-        h1 {
-            font-weight: 600;
+        .logo-container {
+            vertical-align: middle;
+            font-size: 20px;
+
+            .logo {
+                width: 30px;
+                margin: 5px;
+            }
         }
+
+        .widget-instance {
+            margin: 5px;
+            padding: 5px;
+            border: 1px solid #000;
+
+            .meta {
+                .meta-item {
+                    padding: 3px;
+                }
+            }
+        }
+    }
+
+    .left-right-art {
+        position: fixed;
+        bottom: -150px;
+        right: -150px;
+        height: 300px;
+        width: 300px;
+        background: #000;
+        transform: rotate(45deg);
+        z-index: -1;
+    }
+
+    .red {
+        color: red;
     }
 </style>

@@ -1,18 +1,22 @@
-import {Inspector} from '../../../common/inspector';
+import {WidgetInstanceInterface} from '../../../common/widget-instance-interface';
 
-console.log('Hey, the content script is running!');
-let instances = null;
+let instances: WidgetInstanceInterface[] = [];
 
+// This function gets inserted into the page, to get the widget instance information and send it to the content script.
 function codeToInject() {
-    setInterval(() => {
-        console.log('???', window.fcUIInstances);
+    function broadcast() {
         window.parent.postMessage(JSON.stringify({
-            type: 'redirect',
+            type: 'fc-instances',
+            // @ts-ignore
             fcUIInstances: window.fcUIInstances
         }), '*');
-    }, 1000);
+    }
+
+    setInterval(broadcast, 1000);
+    broadcast();
 }
 
+// This embeds a script into the current page.
 function embed(fn: Function) {
     const script = document.createElement("script");
     script.text = `(${fn.toString()})();`;
@@ -22,9 +26,14 @@ function embed(fn: Function) {
 embed(codeToInject);
 
 // Listen for any messages
-window.addEventListener("message", (evt) => {
-    // TODO validate request
-    instances = evt.data;
+window.addEventListener('message', (evt) => {
+    try {
+        const dataParsed = JSON.parse(evt.data);
+        if (dataParsed.type === 'fc-instances') {
+            instances = dataParsed.fcUIInstances;
+        }
+    } catch (e) {
+    }
 })
 
 chrome.runtime.onMessage.addListener(
@@ -36,4 +45,3 @@ chrome.runtime.onMessage.addListener(
         }
     }
 );
-console.log('Content script loaded');

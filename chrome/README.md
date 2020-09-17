@@ -4,8 +4,10 @@ This is a Chrome Extension built with TypeScript and Parcel for debugging your F
 
 ## What issues can this find?
 * How many instances of the widget are active?
-* Why isn't the widget rendering? Check for exceptions, invalid configuration.
+* Why isn't the widget rendering?
 * What page is the widget rendering for?
+* What settings are applied?
+* Is SSO setup correctly?
 
 ## This consists of the following parts
 

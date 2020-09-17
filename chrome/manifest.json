@@ -1,17 +1,17 @@
 {
   "manifest_version": 2,
-  "name": "Chrome Extension Starter",
+  "name": "FastComments Debugger",
   "version": "1.0.0",
   "description": "",
   "icons": {
-    "16": "assets/icons/icon16.png",
-    "48": "assets/icons/icon48.png",
-    "128": "assets/icons/icon128.png"
+    "16": "assets/icons/favicon.png",
+    "48": "assets/icons/favicon.png",
+    "128": "assets/icons/favicon.png"
   },
   "browser_action": {
-    "default_icon": "assets/icons/icon16.png",
+    "default_icon": "assets/icons/favicon.png",
     "default_popup": "popup/index.html",
-    "default_title": "Starter Popup"
+    "default_title": "FastComments Debugger"
   },
   "content_scripts": [
     {
