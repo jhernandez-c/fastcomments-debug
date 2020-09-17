@@ -2,7 +2,7 @@
     <div class="container">
         <div class="logo-container">
             <img src="/../../assets/icons/favicon.png" class="logo" alt="FastComments Logo" title="FastComments"/>
-            FastComments.com Debugger
+            <span>FastComments Debugger</span>
         </div>
 
         <h2 v-if="instances.length === 0">No instances found! Check the Chrome Inspector for errors.</h2>
@@ -20,9 +20,15 @@
                     anything if there are no comments for this page.</h3>
 
                 <div class="meta">
-                    <h3>Instance Settings</h3>
+                    <h3>Instance Settings (Passed to Widget)</h3>
                     <ul>
                         <li class="meta-item" v-for="(value, key) in instance.configViewModel"><b>{{key}}</b>: {{value}}
+                        </li>
+                    </ul>
+                    <h3>Instance Settings (Final)</h3>
+                    <h4 class="red" v-if="instance.configViewModelFinal === null || Object.keys(instance.configViewModelFinal).length === 0">No final configuration found! If widget is loading, open/close this popup to get the latest values.</h4>
+                    <ul v-else>
+                        <li class="meta-item" v-for="(value, key) in instance.configViewModelFinal"><b>{{key}}</b>: {{value}}
                         </li>
                     </ul>
                 </div>
@@ -64,6 +70,7 @@
                         }
                     }
                     instance.configViewModel = configToViewModel(instance.config);
+                    instance.configViewModelFinal = configToViewModel(instance.finalConfig);
                 }
             });
         } else {
@@ -85,8 +92,12 @@
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 
         .logo-container {
-            vertical-align: middle;
             font-size: 20px;
+
+            > * {
+                display: inline-block;
+                vertical-align: middle;
+            }
 
             .logo {
                 width: 30px;
