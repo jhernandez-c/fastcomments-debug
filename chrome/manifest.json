@@ -4,9 +4,9 @@
   "version": "1.0.0",
   "description": "A tool to help you debug your FastComments installation.",
   "icons": {
-    "16": "assets/icons/favicon.png",
-    "48": "assets/icons/favicon.png",
-    "128": "assets/icons/favicon.png"
+    "16": "assets/icons/16.png",
+    "48": "assets/icons/48.png",
+    "128": "assets/icons/128.png"
   },
   "browser_action": {
     "default_icon": "assets/icons/favicon.png",
