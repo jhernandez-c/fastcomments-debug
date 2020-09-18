@@ -5,46 +5,48 @@
             <span>FastComments Debugger</span>
         </div>
 
-
-        <h2 v-if="instances.length === 0">No instances found! Check the Chrome Inspector for errors.</h2>
+        <h2 v-if="!loaded" class="loading">...Loading...</h2>
         <div v-else>
-            <h4>{{ Number(instances.length).toLocaleString() }} {{ instances.length === 1 ? 'instance' : 'instances' }}
-                of
-                the comment widget found.</h4>
+            <h2 v-if="instances.length === 0">No instances found! Check the Chrome Inspector for errors.</h2>
+            <div v-else>
+                <h4>{{ Number(instances.length).toLocaleString() }} {{ instances.length === 1 ? 'instance' : 'instances'
+                    }} of the comment widget found.</h4>
 
-            <div class="widget-instance" v-for="(instance, index) in instances">
-                <h4>Instance {{ index + 1 }} ({{ instance.config.urlId }})</h4>
+                <div class="widget-instance" v-for="(instance, index) in instances">
+                    <h4>Instance {{ index + 1 }} ({{ instance.config.urlId }})</h4>
 
-                <h3 class="red" v-if="!instance.requested">No request to FastComment's servers! Check the Chrome
-                    Inspector for errors.</h3>
-                <h3 class="red" v-if="instance.config.readonly">Instance is readonly! The widget will not render
-                    anything if there are no comments for this page.</h3>
-                <h3 class="red" v-if="instance.config.allowAnon">Do not pass allowAnon to the widget configuration
-                    manually! Add a customization rule instead. Otherwise, the UI
-                    will allow no email to be entered but comments will not save.</h3>
+                    <h3 class="red" v-if="!instance.requested">No request to FastComment's servers! Check the Chrome
+                        Inspector for errors.</h3>
+                    <h3 class="red" v-if="instance.config.readonly">Instance is readonly! The widget will not render
+                        anything if there are no comments for this page.</h3>
+                    <h3 class="red" v-if="instance.config.allowAnon">Do not pass allowAnon to the widget configuration
+                        manually! Add a customization rule instead. Otherwise, the UI
+                        will allow no email to be entered but comments will not save.</h3>
 
-                <div class="meta">
-                    <h3>Instance Settings (Passed to Widget)</h3>
-                    <ul>
-                        <li class="meta-item" v-for="(value, key) in instance.configViewModel"><b>{{key}}</b>: {{value}}
-                        </li>
-                    </ul>
-                    <h3>Instance Settings (Final)</h3>
-                    <h4 class="red"
-                        v-if="instance.configViewModelFinal === null || Object.keys(instance.configViewModelFinal).length === 0">
-                        No final configuration found! If widget is loading, open/close this popup to get the latest
-                        values.</h4>
-                    <ul v-else>
-                        <li class="meta-item" v-for="(value, key) in instance.configViewModelFinal"><b>{{key}}</b>:
-                            {{value}}
-                        </li>
-                    </ul>
+                    <div class="meta">
+                        <h3>Instance Settings (Passed to Widget)</h3>
+                        <ul>
+                            <li class="meta-item" v-for="(value, key) in instance.configViewModel"><b>{{key}}</b>:
+                                {{value}}
+                            </li>
+                        </ul>
+                        <h3>Instance Settings (Final)</h3>
+                        <h4 class="red"
+                            v-if="instance.configViewModelFinal === null || Object.keys(instance.configViewModelFinal).length === 0">
+                            No final configuration found! If widget is loading, open/close this popup to get the latest
+                            values.</h4>
+                        <ul v-else>
+                            <li class="meta-item" v-for="(value, key) in instance.configViewModelFinal"><b>{{key}}</b>:
+                                {{value}}
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <h3 class="red" v-if="hasEmbedJS === false">The FastComments embed script (embed.min.js) was not found on this
-            page.</h3>
+            <h3 class="red" v-if="hasEmbedJS === false">The FastComments embed script (embed.min.js) was not found on
+                this page.</h3>
+        </div>
     </div>
     <div class="left-right-art"></div>
 </template>
@@ -56,16 +58,19 @@
     interface ViewModel {
         instances: WidgetInstanceInterface[]
         hasEmbedJS: boolean | null
+        loaded: boolean
     }
 
     const data: ViewModel = {
         instances: [],
-        hasEmbedJS: null
+        hasEmbedJS: null,
+        loaded: false
     };
 
     interface ContentResponse {
         instances: WidgetInstanceInterface[]
         hasEmbedJS: boolean | null
+        loaded: boolean
     }
 
     function queryContentScript() {
@@ -73,6 +78,9 @@
             if (tabs[0].id) {
                 try {
                     chrome.tabs.sendMessage(tabs[0].id, {action: 'inspect'}, function (response: ContentResponse) {
+                        if (!response) {
+                            return;
+                        }
                         data.instances = response.instances || [];
                         for (const instance of data.instances) {
                             for (const key in instance.config) {
@@ -94,6 +102,7 @@
                             instance.configViewModelFinal = configToViewModel(instance.finalConfig);
                         }
                         data.hasEmbedJS = response.hasEmbedJS;
+                        data.loaded = response.loaded;
                     });
                 } catch (e) {
                     console.debug(e);
@@ -132,6 +141,10 @@
                 width: 30px;
                 margin: 5px;
             }
+        }
+
+        .loading {
+            text-align: center;
         }
 
         .widget-instance {

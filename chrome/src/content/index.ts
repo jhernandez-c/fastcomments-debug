@@ -2,6 +2,7 @@ import {WidgetInstanceInterface} from '../../../common/widget-instance-interface
 
 let instances: WidgetInstanceInterface[] = [];
 let hasEmbedJSGlobal: boolean|null = null;
+let loaded = false;
 
 // This function gets inserted into the page, to get the widget instance information and send it to the content script.
 function codeToInject() {
@@ -55,26 +56,34 @@ function embed(fn: Function) {
     document.documentElement.appendChild(script);
 }
 
-embed(codeToInject);
-
-// Listen for any messages
+// Listen for any messages from the page
 window.addEventListener('message', (evt) => {
     try {
         const dataParsed = JSON.parse(evt.data);
         if (dataParsed.type === 'fc-instances') {
             instances = dataParsed.fcUIInstances;
+            loaded = true;
         } else if(dataParsed.type === 'fc-embed-js') {
             hasEmbedJSGlobal = dataParsed.hasEmbedJS;
+            loaded = true;
         }
     } catch (e) {
     }
-})
+});
+
+let watcherInjected = false;
 
 chrome.runtime.onMessage.addListener(
     function (message, sender, sendResponse) {
         switch (message.action) {
             case 'inspect':
-                sendResponse({ instances, hasEmbedJS: hasEmbedJSGlobal });
+                if (!watcherInjected) {
+                    embed(codeToInject);
+                    watcherInjected = true;
+                    sendResponse(undefined);
+                } else {
+                    sendResponse({ instances, hasEmbedJS: hasEmbedJSGlobal, loaded });
+                }
                 break;
         }
     }
