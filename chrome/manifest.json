@@ -26,6 +26,6 @@
     "assets/icons/*.png"
   ],
   "permissions": [
-    "*://*/*"
+    "activeTab"
   ]
 }
