@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "FastComments Debugger",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A tool to help you debug your FastComments installation.",
   "icons": {
     "16": "assets/icons/16.png",
