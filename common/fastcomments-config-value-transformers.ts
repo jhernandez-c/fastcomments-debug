@@ -6,12 +6,23 @@ export const ConfigValueTransformers = {
             return 'Not defined';
         }
         if (sso.userDataJSONBase64 && sso.verificationHash && sso.timestamp) {
-            return 'Required Parameters Defined (correctness not verified) ✔️';
+            return {
+                // TODO include decoded userDataJSONBase64
+                // TODO VERIFY TIMESTMAP is not too old
+                displayText: 'Required Parameters Defined (correctness not verified) ✔️',
+                debug: JSON.stringify(sso)
+            };
         }
         if (sso.loginURL && sso.loginURL.trim()) {
-            return 'No user information, but login URL defined ️✔️';
+            return {
+                displayText: 'No user information, but login URL defined ️✔️',
+                debug: JSON.stringify(sso)
+            };
         }
-        return 'Invalid Configuration ❌';
+        return {
+            displayText: 'Invalid Configuration ❌',
+            debug: JSON.stringify(sso)
+        };
     }
 }
 

@@ -9,16 +9,25 @@ export default function configToViewModel(config: FastCommentsConfig): Record<st
         let value = config[key];
         // @ts-ignore
         if (ConfigValueTransformers[key]) {
+            const rawValue = ConfigValueTransformers[key](value);
+            if (typeof rawValue === 'string') {
+                value = rawValue;
+                // @ts-ignore
+                result[ConfigDescriptions[key] ? ConfigDescriptions[key] : key] = value;
+            } else {
+                const configKey = ConfigDescriptions[key] ? ConfigDescriptions[key] : key;
+                result[configKey] = rawValue.displayText as string;
+                result[`${configKey}-debug`] = rawValue.debug as string;
+            }
+        } else {
             // @ts-ignore
-            value = ConfigValueTransformers[key](value);
-        }
-        // @ts-ignore
-        if (ConfigValueTransformerByType[typeof key]) {
+            if (ConfigValueTransformerByType[typeof key]) {
+                // @ts-ignore
+                value = ConfigValueTransformerByType[typeof key](value);
+            }
             // @ts-ignore
-            value = ConfigValueTransformerByType[typeof key](value);
+            result[ConfigDescriptions[key] ? ConfigDescriptions[key] : key] = value;
         }
-        // @ts-ignore
-        result[ConfigDescriptions[key] ? ConfigDescriptions[key] : key] = value;
     }
     return result;
 }

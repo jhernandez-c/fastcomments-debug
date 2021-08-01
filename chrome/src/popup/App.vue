@@ -155,6 +155,7 @@
             .meta {
                 .meta-item {
                     padding: 3px;
+                    word-break: break-all;
                 }
             }
         }
