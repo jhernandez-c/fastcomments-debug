@@ -6,11 +6,21 @@ export const ConfigValueTransformers = {
             return 'Not defined';
         }
         if (sso.userDataJSONBase64 && sso.verificationHash && sso.timestamp) {
+            let parsed = 'Could not decode! Not valid base64!';
+            let parsedCorrectly = false;
+            try {
+                parsed = atob(sso.userDataJSONBase64);
+                parsedCorrectly = true;
+            } catch (e) {
+                console.error('Could not decode value!', sso.userDataJSONBase64, e);
+            }
             return {
-                // TODO include decoded userDataJSONBase64
                 // TODO VERIFY TIMESTMAP is not too old
-                displayText: 'Required Parameters Defined (correctness not verified) ✔️',
-                debug: JSON.stringify(sso)
+                displayText: 'Required Parameters Defined (correctness not verified) ️' + (parsedCorrectly ? '✔️' : '❌'),
+                debug: {
+                    parsed,
+                    raw: JSON.stringify(sso)
+                }
             };
         }
         if (sso.loginURL && sso.loginURL.trim()) {
