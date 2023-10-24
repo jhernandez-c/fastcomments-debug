@@ -1,11 +1,11 @@
 {
   "name": "fastcomments-debug-chrome",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Chrome Extension for Debugging Your FastComments Installation",
   "main": "index.js",
   "scripts": {
-    "build:content": "parcel build src/content/index.ts -d dist/content",
-    "build:popup": "parcel build src/popup/index.html -d dist/popup --public-url ./",
+    "build:content": "parcel build src/content/index.ts -d dist/content --no-minify",
+    "build:popup": "parcel build src/popup/index.html -d dist/popup --public-url ./ --no-minify",
     "build": "npm run build:content && npm run build:popup",
     "clean": "rimraf dist",
     "copy:static": "copyfiles manifest.json assets/**/* dist",

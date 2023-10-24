@@ -1,16 +1,32 @@
 import {WidgetInstanceInterface} from '../../../common/widget-instance-interface';
 
 let instances: WidgetInstanceInterface[] = [];
-let hasEmbedJSGlobal: boolean|null = null;
+let hasEmbedJSGlobal: boolean | null = null;
 let loaded = false;
 
 // This function gets inserted into the page, to get the widget instance information and send it to the content script.
 function codeToInject() {
     function broadcastFCInstances() {
+        /**
+         * We are not using WeakSet here because then we'd have to do a typeof === 'object' check, and
+         * this gets turned into invalid minified code with Parcel 1. We also can't disable minification in Parcel 1.
+         * We tried to migrate to Parcel 2 in 2022 and had major issues, we should attempt this again in the future and disable
+         * minification since it's not really needed for our tiny plugin.
+         */
+        const seen = new Set();
         window.parent.postMessage(JSON.stringify({
             type: 'fc-instances',
             // @ts-ignore
             fcUIInstances: window.fcUIInstances
+        }, function (key, value) {
+            if (value) {
+                // Something may create a circular reference somewhere, like with the React library. Don't let this break the debugger.
+                if (seen.has(value)) {
+                    return;
+                }
+                seen.add(value);
+            }
+            return value;
         }), '*');
     }
 
@@ -18,7 +34,7 @@ function codeToInject() {
     broadcastFCInstances();
 
     let embedJsInterval: number;
-    let hasEmbedJS : boolean|null = null; // Do we have any FastComments embed.js scripts on the page?
+    let hasEmbedJS: boolean | null = null; // Do we have any FastComments embed.js scripts on the page?
     function broadcastFCEmbedJS() {
         if (hasEmbedJS) {
             if (embedJsInterval) {
@@ -63,7 +79,7 @@ window.addEventListener('message', (evt) => {
         if (dataParsed.type === 'fc-instances') {
             instances = dataParsed.fcUIInstances;
             loaded = true;
-        } else if(dataParsed.type === 'fc-embed-js') {
+        } else if (dataParsed.type === 'fc-embed-js') {
             hasEmbedJSGlobal = dataParsed.hasEmbedJS;
             loaded = true;
         }
@@ -82,7 +98,7 @@ chrome.runtime.onMessage.addListener(
                     watcherInjected = true;
                     sendResponse(undefined);
                 } else {
-                    sendResponse({ instances, hasEmbedJS: hasEmbedJSGlobal, loaded });
+                    sendResponse({instances, hasEmbedJS: hasEmbedJSGlobal, loaded});
                 }
                 break;
         }
