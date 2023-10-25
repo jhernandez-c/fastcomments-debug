@@ -13,13 +13,13 @@ function codeToInject() {
          * We tried to migrate to Parcel 2 in 2022 and had major issues, we should attempt this again in the future and disable
          * minification since it's not really needed for our tiny plugin.
          */
-        const seen = new Set();
+        const seen = new WeakSet();
         window.parent.postMessage(JSON.stringify({
             type: 'fc-instances',
             // @ts-ignore
             fcUIInstances: window.fcUIInstances
         }, function (key, value) {
-            if (value) {
+            if (typeof value === 'object' && value) {
                 // Something may create a circular reference somewhere, like with the React library. Don't let this break the debugger.
                 if (seen.has(value)) {
                     return;
