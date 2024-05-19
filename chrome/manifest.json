@@ -1,5 +1,5 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "FastComments Debugger",
   "version": "1.2.3",
   "description": "A tool to help you debug your FastComments installation.",
@@ -8,7 +8,7 @@
     "48": "assets/icons/48.png",
     "128": "assets/icons/128.png"
   },
-  "browser_action": {
+  "action": {
     "default_icon": "assets/icons/favicon.png",
     "default_popup": "popup/index.html",
     "default_title": "FastComments Debugger"
@@ -19,11 +19,23 @@
         "content/index.js"
       ],
       "matches": ["<all_urls>"],
-      "run_at": "document_start"
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "js": [
+        "content/bridge.js"
+      ],
+      "matches": ["<all_urls>"],
+      "run_at": "document_start",
+      "world": "ISOLATED"
     }
   ],
   "web_accessible_resources": [
-    "assets/icons/*.png"
+    {
+      "resources": ["assets/icons/*.png"],
+      "matches": ["<all_urls>"]
+    }
   ],
   "permissions": [
     "activeTab"

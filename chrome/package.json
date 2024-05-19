@@ -3,7 +3,7 @@
   "version": "1.2.3",
   "description": "Chrome Extension for Debugging Your FastComments Installation",
   "scripts": {
-    "build:content": "parcel build src/content/index.ts --dist-dir dist/content",
+    "build:content": "parcel build src/content/index.ts --dist-dir dist/content && parcel build src/content/bridge.ts --dist-dir dist/content",
     "build:popup": "parcel build src/popup/index.html --dist-dir dist/popup --public-url ./",
     "build": "npm run build:content && npm run build:popup",
     "clean": "rimraf dist",
